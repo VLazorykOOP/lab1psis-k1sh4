@@ -1,0 +1,39 @@
+services:
+  # 1.(Nginx)
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/usr/share/nginx/html 
+    depends_on:
+      - api
+
+  # 2. (API)
+  api:
+    build:
+      context: ./api
+    volumes:
+      - ./api:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/castles_db
+
+  # 3.(PostgreSQL)
+  db:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=castles_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432" # Порт для БД
+
+volumes:
+  postgres_data:
